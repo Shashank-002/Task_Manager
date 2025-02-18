@@ -19,22 +19,30 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        // Define custom error messages
         $messages = [
-            'email.required' => 'Email field is required.',
+            'email.required' => 'Email is required.',
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already taken, please choose another.',
-
-            'password.required' => 'Password field is required.',
+            'password.required' => 'Password is required.',
             'password.min' => 'Password must have at least 6 characters.',
+            'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, and one special character.',
+            'password_confirmation.required' => 'Confirm password is required.',
+            // 'password_confirmation.confirmed' => 'Confirm password does not match.'
         ];
 
         // Validate with custom messages
         $request->validate([
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => [
+                'required',
+                'confirmed',
+                'min:6',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[!@#$%^&*(),.?":{}|<>]/',
+            ],
+            'password_confirmation' => 'required' 
         ], $messages);
-
 
         // Store user data in session
         Session::put('user', [
@@ -44,6 +52,7 @@ class AuthController extends Controller
 
         return redirect('/login');
     }
+
 
     public function login(Request $request)
     {
@@ -66,7 +75,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        Session::forget('user');
+        // Session::forget('user');
         return redirect('/login');
     }
 }

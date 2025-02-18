@@ -1,41 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register Page</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 </head>
 
 <body class="bg-gray-100">
     <div class="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md mt-12">
         <h2 class="text-2xl font-semibold mb-6 text-center">Register</h2>
-         @if ($errors->any())
-        <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-            <ul>
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-        <form action="{{ route('register') }}" method="POST">
+    
+        <form action="{{ route('register') }}" method="POST" novalidate>
             @csrf
 
             <!-- Email input -->
-            <input type="email" name="email" placeholder="Email" class="w-full p-2 mb-4 border rounded @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+            <div class="mb-4">
+                <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+                @error('email')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
 
             <!-- Password input -->
-            <div>
-                <input type="password" name="password" placeholder="Password" class="w-full p-2 mb-4 border rounded @error('password') border-red-500 @enderror" value="{{ old('password') }}">
+            <div class="mb-4">
+                <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded @error('password') border-red-500 @enderror" value="{{ old('password') }}">
+                @error('password')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Confirm Password input -->
-            <input type="password" name="password_confirmation" placeholder="Confirm Password" class="w-full p-2 mb-4 border rounded @error('password_confirmation') border-red-500 @enderror" value="{{ old('password_confirmation') }}">
+            <div class="mb-4">
+                <input type="password" name="password_confirmation" placeholder="Confirm Password" class="w-full p-2 border rounded @error('password_confirmation') border-red-500 @enderror" value="{{ old('password_confirmation') }}">
+                @error('password_confirmation')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
 
-            <button type="submit" class="w-full p-2 bg-green-500 text-white rounded cursor-pointer">Register</button>
+            <button type="submit" class="w-full p-2 bg-blue-500 text-white rounded cursor-pointer">Register</button>
+            <p class="mt-4 text-center">
+                Already registered? <a href="{{ route('login') }}" class="text-blue-500">Login</a>
+            </p>
         </form>
     </div>
 </body>

@@ -10,6 +10,8 @@ class TaskController extends Controller
     public function index()
     {
         $tasks = Session::get('tasks', []);
+        if (empty($tasks)) {
+        }
         return view('tasks.index', compact('tasks'));
     }
 
@@ -42,13 +44,23 @@ class TaskController extends Controller
 
     public function update(Request $request, $taskIndex)
     {
+        // Validate that the task is not just spaces
+        $request->validate([
+            'task' => 'required|string|max:255|regex:/\S/',
+        ], [
+            'task.required' => 'Please enter a task.',
+            'task.regex' => 'Task cannot be just spaces.',
+        ]);
+
+        // Fetch tasks from session
         $tasks = Session::get('tasks', []);
+
+        // Update the task
         $tasks[$taskIndex] = $request->task;
         Session::put('tasks', $tasks);
 
         return redirect('/tasks')->with('success', 'Task updated successfully.');
     }
-
 
     public function delete($taskIndex)
     {
