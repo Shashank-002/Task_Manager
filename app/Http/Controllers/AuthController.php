@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -27,7 +29,7 @@ class AuthController extends Controller
             'password.min' => 'Password must have at least 6 characters.',
             'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, and one special character.',
             'password_confirmation.required' => 'Confirm password is required.',
-            // 'password_confirmation.confirmed' => 'Confirm password does not match.'
+            'password_confirmation.same' => 'Password do not match'
         ];
 
         // Validate with custom messages
@@ -35,24 +37,31 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => [
                 'required',
-                'confirmed',
                 'min:6',
                 'regex:/[a-z]/',
                 'regex:/[A-Z]/',
                 'regex:/[!@#$%^&*(),.?":{}|<>]/',
             ],
-            'password_confirmation' => 'required' 
+            'password_confirmation' => 'required'
         ], $messages);
 
-        // Store user data in session
-        Session::put('user', [
+        if ($request->password !== $request->password_confirmation) {
+            return redirect()->back()
+                ->withErrors(['password_confirmation' => 'Password do not match'])
+                ->withInput();
+        }
+
+        // Store user data in the database
+        $user = User::create([
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password),
         ]);
+
+        // Log the user in
+        Auth::login($user);
 
         return redirect('/login');
     }
-
 
     public function login(Request $request)
     {
@@ -62,9 +71,12 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = Session::get('user');
+        $user = User::where('email', $request->email)->first();
 
-        if ($user && $user['email'] == $request->email && password_verify($request->password, $user['password'])) {
+        if ($user && Hash::check($request->password, $user->password)) {
+            // Log the user in
+            Auth::login($user);
+
             return redirect('/tasks');
         }
 
@@ -75,7 +87,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        // Session::forget('user');
+        Auth::logout();
         return redirect('/login');
     }
 }

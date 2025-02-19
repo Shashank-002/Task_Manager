@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
     public function index()
     {
-        $tasks = Session::get('tasks', []);
-        if (empty($tasks)) {
-        }
+        // Fetch tasks only for the authenticated user
+        $tasks = Auth::user()->tasks()->get();
+
         return view('tasks.index', compact('tasks'));
     }
-
 
     public function add(Request $request)
     {
@@ -23,51 +23,37 @@ class TaskController extends Controller
         ], [
             'task.required' => 'Please enter a task.',
         ]);
-        $tasks = Session::get('tasks', []);
-        $tasks[] = $request->task;
-        Session::put('tasks', $tasks);
+
+        Task::create([
+            'user_id' => Auth::id(),
+            'task' => $request->task,
+        ]);
 
         return redirect('/tasks');
     }
-
-    public function edit($taskIndex)
+    public function edit(Task $task)
     {
-        $tasks = Session::get('tasks', []);
-        $task = $tasks[$taskIndex] ?? null;
-
-        if (!$task) {
-            return redirect('/tasks')->with('error', 'Task not found.');
-        }
-
-        return view('tasks.edit', compact('task', 'taskIndex'));
+        return view('tasks.edit', compact('task'));
     }
 
-    public function update(Request $request, $taskIndex)
+    public function update(Request $request, Task $task)
     {
-        // Validate that the task is not just spaces
         $request->validate([
-            'task' => 'required|string|max:255|regex:/\S/',
-        ], [
-            'task.required' => 'Please enter a task.',
-            'task.regex' => 'Task cannot be just spaces.',
+            'task' => 'required|string|max:255',
         ]);
 
-        // Fetch tasks from session
-        $tasks = Session::get('tasks', []);
-
-        // Update the task
-        $tasks[$taskIndex] = $request->task;
-        Session::put('tasks', $tasks);
+        $task->update([
+            'task' => $request->task,
+        ]);
 
         return redirect('/tasks')->with('success', 'Task updated successfully.');
     }
 
-    public function delete($taskIndex)
-    {
-        $tasks = Session::get('tasks', []);
-        unset($tasks[$taskIndex]);
-        Session::put('tasks', array_values($tasks));
 
-        return redirect('/tasks');
+    public function delete(Task $task)
+    {
+        $task->delete();
+
+        return redirect('/tasks')->with('success', 'Task deleted successfully.');
     }
 }

@@ -10,8 +10,8 @@
 
 <body class="bg-gray-100">
     <div class="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md mt-12">
-        <h2 class="text-2xl font-semibold mb-6 text-center">Register</h2>
-    
+        <h2 class="text-2xl font-semibold mb-6 text-center">Register Page</h2>
+
         <form action="{{ route('register') }}" method="POST" novalidate>
             @csrf
 
